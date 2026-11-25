@@ -5,7 +5,7 @@ UE4SS C++ mod for Stellar Blade. ATOOL's `ModActor` blueprint refuses clip slots
 those three constants in memory once ATOOL has loaded. Nothing of ATOOL's is modified on disk or redistributed.
 
 ## Status (2026-11-25)
-Verified 2026-11-25: on load the log shows all three constants found at +97 and changed 1000 -> 9999 (`done: 3 constant(s) now 9999`), no crash. NOT yet verified: that ATOOL then actually plays a clip above 1000.
+VERIFIED IN GAME 2026-11-25: with this mod, clips at slots 1001 and 2000 load into ATOOL's list and play (see 'FIX FOUND' below). Earlier note: on load the log shows all three constants found at +97 and changed 1000 -> 9999 (`done: 3 constant(s) now 9999`), no crash. NOT yet verified: that ATOOL then actually plays a clip above 1000.
 
 ## Install
 Copy `main.dll` to `<game>/SB/Binaries/Win64/ue4ss/Mods/AToolSlotLimit/dlls/`, add `enabled.txt` (contains `1`) and `config.txt` (`limit=9999`; `1000` = leave ATOOL unchanged). Restart the game (C++ mods do not hot reload).
