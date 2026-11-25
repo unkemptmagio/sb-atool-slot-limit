@@ -23,3 +23,10 @@ Test pak `Eve_7400_SkyrimLeitoTest_P` (Leito_Anal_Missionary re-built at slot 66
 - PEFA, on play: `clip not in ATOOL's list (PEFA won't load it itself): .../anim/6666.6666`, then `skipped .../anim/6666a.6666a - made for nil` (partner table not loaded either).
 - PEFA never loads clips itself (setting `pefa_load` off, a game-loader crash on 2026-11-16); it takes them from ATOOL's `anim3` array, which `DataGet3` fills (PEFA log: 336-337 clips, fewer than the ~351 slots installed). 6666 is not in that array.
 So raising the guard did not make `DataGet3` list a slot-6666 clip. DataGet3 is short (1831 bytes): guard `<= 1000` at +97, then ~15 calls (asset registry style), no string/name constants. Next: probe the live `anim3` / `j3` / `jl3` with SBLive (`tools/sbl.ps1`) and call `DataGet3` by hand, to see how it picks clips; or try PEFA's `pefa_load=on` for this one clip.
+
+## Live probe 2026-11-25 (SBLive, game running with the patch active)
+- ATOOL actor: `j1=j2=j3=1`, `jl1..3=-1`, `anim1` 65, `anim2` 28, `anim3` 336 clips, max slot 900, no 6666.
+- `anim3` == the Asset Registry listing under `/Game/Mods/HD-ATOOL_P/anim` (`GetAssetsByPath` returns exactly 336). So `DataGet3` just reads the registry; the slot index is not what picks clips.
+- Registry knows slots 352 and 900 (`GetAssetByObjectPath`) but NOT 700 (ESAP pack, installed since Nov 20), 307, or 6666. Of 352 installed slots, the 16 missing from `anim3` are: ESAP 700-709, OldDroid 307-311 (other folder), test 6666. So 700 is missing while 900 is present: it is not a "> N" cutoff.
+- `AR:ScanPathsSynchronous({"/Game/Mods/HD-ATOOL_P/anim"}, true)` run live did not add them (still 336).
+Open: why the registry lists some mod-pak assets and not others (pak build attribute? registry source?). Not tested: `LoadAsset` of the 6666 path directly (PEFA's `pefa_load=on` route; crash history on 2026-11-16).
