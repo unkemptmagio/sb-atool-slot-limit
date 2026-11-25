@@ -35,3 +35,17 @@ Open: why the registry lists some mod-pak assets and not others (pak build attri
 - `LoadAsset("/Game/Mods/HD-ATOOL_P/anim/6666.6666")` returns ok but the object stays nil; same for 700 (ESAP). 352 and 900 are resident. The test and ESAP containers are mounted (their `.ucas` are locked by the game) and their TOC structure (ver 2, chunk types, mount point `../../../SB/Content/`) matches working containers, so it is not a mount or pak-format problem. UE4SS `LoadAsset` goes through the Asset Registry, which does not know them.
 - `sb-live/docs/live-pak.md` (2026-11-24): ATOOL loads all its clips at startup and keeps them resident (339 `anim/<N>`), so the clip loader, not `DataGet1-3`, decides which slots exist. That loader is not in the `DataGet` functions: no other limit constant (1001, 999, ...) in ModActor, NewBlueprint2/3 or NewWidgetBlueprint1.
 - Not yet searched: `NewWidgetBlueprint2/3`, `NewBlueprint1`, `NewAnimBlueprint` (raw export did not land). ATOOL's own menu (a widget) is the likely startup batch loader.
+
+## DataGet3 decoded (2026-11-25, from the container's uncompressed .ucas; script pointer = 16 bytes: count, FName index, number, owner export)
+```
+on3 = 0
+loop:  if (on3 < 1000) {                      // <- the constant AToolSlotLimit rewrites (+97)
+         on3 = on3 + 1
+         path = os3 + str(on3) + "." + str(on3) + "'"      // AnimSequence'/Game/Mods/HD-ATOOL_P/anim/<n>.<n>'
+         obj = LoadAsset_Blocking(MakeSoftObjectPath(path)); cast to AnimSequence; if ok: anim3.Add(obj)
+         goto loop }
+```
+(from the first statement `anim3` clear, then the above). So the 1000 IS the loop bound and the loader loads slots 1..bound by exact path, which is why gaps are fine. Confirmed in game: slot 660 test pak loads, ESAP 700 / OldDroid 307 are missing because of IoStore container-ID clashes (see sb-slot-organizer scan).
+
+## 1001 + 2000 test (09:16-09:17)
+Patch logged `1000 -> 9999` for all three at 09:16:57, PEFA ran DataGet3 at 09:17:28 (list empty before, 336 after, no 660/1001/2000 in it). Slot 1001 and 2000 (same scenes that load at 660, container id unique) did NOT load. With the loop bound at 9999 they should have. Open: either the in-memory patch is not what DataGet3 executes, or loading fails for another reason above 1000. Next probe (needs the game running): read `A.on3` after the loop (9999 = patch effective, 1000 = not), then call `DataGet3` by hand.
