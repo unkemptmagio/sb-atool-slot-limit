@@ -49,3 +49,7 @@ loop:  if (on3 < 1000) {                      // <- the constant AToolSlotLimit 
 
 ## 1001 + 2000 test (09:16-09:17)
 Patch logged `1000 -> 9999` for all three at 09:16:57, PEFA ran DataGet3 at 09:17:28 (list empty before, 336 after, no 660/1001/2000 in it). Slot 1001 and 2000 (same scenes that load at 660, container id unique) did NOT load. With the loop bound at 9999 they should have. Open: either the in-memory patch is not what DataGet3 executes, or loading fails for another reason above 1000. Next probe (needs the game running): read `A.on3` after the loop (9999 = patch effective, 1000 = not), then call `DataGet3` by hand.
+
+## FIX FOUND 2026-11-25 09:28: ATOOL's class is replaced after the first patch
+New build logs UFunction/Script addresses and re-checks every 5 s. First patch 09:27:49 (UFunction 0x3733f6de0...), then at 09:28:17 the same three functions are at NEW addresses (0x1b9912a5e0...) with the 1000 constant back: ATOOL's `ModActor_C` was re-created (level load). The old one-shot mod had patched the dead copy, which is why `on3` stayed 1000. Re-applying on the new copy: live probe shows `on1=on2=on3=9999`, `anim3` = 338 clips, and slots 1001 and 2000 ARE in ATOOL's list (the 660 test pak was replaced by the 1001/2000 one, so 660 is absent as expected).
+Still to confirm: that 1001/2000 play, and the load cost of the longer loop (DataGet3 now tries 9999 paths).
