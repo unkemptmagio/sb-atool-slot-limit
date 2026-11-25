@@ -12,6 +12,7 @@
 #include <chrono>
 #include <cstdint>
 #include <fstream>
+#include <map>
 #include <string>
 
 using namespace RC;
@@ -21,7 +22,8 @@ class AToolSlotLimit : public CppUserModBase
 {
     static constexpr int OLD_LIMIT = 1000, SCRIPT_OFF = 0x60;   // ponytail: raw offset; UE4SS exposes no Script accessor
     int limit = 9999;
-    bool done = false;
+    bool done = false; int lastTotal = -1;
+    std::map<std::wstring, uintptr_t> lastKey;
     std::chrono::steady_clock::time_point last{};
 
     void loadCfg(const std::wstring& path)
@@ -50,6 +52,9 @@ class AToolSlotLimit : public CppUserModBase
             else if (memcmp(data + i, newB, 5) == 0) ++hit;
         }
         if (!hit) Output::send<LogLevel::Verbose>(STR("[AToolSlotLimit] {}: no 1000 constant in {} bytes\n"), name, num);
+        auto key = reinterpret_cast<uintptr_t>(fn) ^ reinterpret_cast<uintptr_t>(data);
+        auto& seen = lastKey[name];
+        if (seen != key) { Output::send<LogLevel::Verbose>(STR("[AToolSlotLimit] {}: UFunction {} Script data {} ({} bytes)\n"), name, (void*)fn, (void*)data, num); seen = key; }
         return hit;
     }
 
@@ -62,8 +67,8 @@ class AToolSlotLimit : public CppUserModBase
             if (r == -1) ++missing; else if (r > 0) total += r;
         }
         if (missing) return;                      // class not loaded yet: try again later
-        done = true;
-        Output::send<LogLevel::Verbose>(STR("[AToolSlotLimit] done: {} constant(s) now {} (3 expected)\n"), total, limit);
+        if (!done || total != lastTotal) Output::send<LogLevel::Verbose>(STR("[AToolSlotLimit] {}: {} constant(s) now {} (3 expected)\n"), done ? STR("changed") : STR("done"), total, limit);
+        done = true; lastTotal = total;
     }
 
 public:
@@ -77,9 +82,8 @@ public:
         std::wstring p = path; p = p.substr(0, p.find_last_of(L"\\/")); p = p.substr(0, p.find_last_of(L"\\/"));   // .../AToolSlotLimit/dlls/main.dll
         loadCfg(p + L"\\config.txt");
         Hook::RegisterEngineTickPostCallback([this](UEngine*, float) {
-            if (done) return;
             auto now = std::chrono::steady_clock::now();
-            if (now - last < std::chrono::seconds(2)) return;
+            if (now - last < std::chrono::seconds(done ? 5 : 2)) return;   // after the first patch: re-check (re-apply if ATOOL's class was replaced)
             last = now; tryPatch();
         });
         Output::send<LogLevel::Verbose>(STR("[AToolSlotLimit] v0.1 loaded, limit {}\n"), limit);
