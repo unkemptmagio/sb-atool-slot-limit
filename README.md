@@ -30,3 +30,8 @@ So raising the guard did not make `DataGet3` list a slot-6666 clip. DataGet3 is 
 - Registry knows slots 352 and 900 (`GetAssetByObjectPath`) but NOT 700 (ESAP pack, installed since Nov 20), 307, or 6666. Of 352 installed slots, the 16 missing from `anim3` are: ESAP 700-709, OldDroid 307-311 (other folder), test 6666. So 700 is missing while 900 is present: it is not a "> N" cutoff.
 - `AR:ScanPathsSynchronous({"/Game/Mods/HD-ATOOL_P/anim"}, true)` run live did not add them (still 336).
 Open: why the registry lists some mod-pak assets and not others (pak build attribute? registry source?). Not tested: `LoadAsset` of the 6666 path directly (PEFA's `pefa_load=on` route; crash history on 2026-11-16).
+
+## LoadAsset test 2026-11-25
+- `LoadAsset("/Game/Mods/HD-ATOOL_P/anim/6666.6666")` returns ok but the object stays nil; same for 700 (ESAP). 352 and 900 are resident. The test and ESAP containers are mounted (their `.ucas` are locked by the game) and their TOC structure (ver 2, chunk types, mount point `../../../SB/Content/`) matches working containers, so it is not a mount or pak-format problem. UE4SS `LoadAsset` goes through the Asset Registry, which does not know them.
+- `sb-live/docs/live-pak.md` (2026-11-24): ATOOL loads all its clips at startup and keeps them resident (339 `anim/<N>`), so the clip loader, not `DataGet1-3`, decides which slots exist. That loader is not in the `DataGet` functions: no other limit constant (1001, 999, ...) in ModActor, NewBlueprint2/3 or NewWidgetBlueprint1.
+- Not yet searched: `NewWidgetBlueprint2/3`, `NewBlueprint1`, `NewAnimBlueprint` (raw export did not land). ATOOL's own menu (a widget) is the likely startup batch loader.
