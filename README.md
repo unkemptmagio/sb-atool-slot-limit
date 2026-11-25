@@ -16,3 +16,10 @@ Note `out\main.dll` in the SBMods root is shared with SBCollide: install right a
 
 ## How
 Polls every 2 s (engine tick) until `/Game/Mods/HD-ATOOL_P/ModActor.ModActor_C:DataGet1..3` exist, reads their `UStruct::Script` TArray (offset 0x60), replaces `1D E8 03 00 00` with `1D <limit>`, then stops polling. Sanity checks on the array before touching it. Logs every change.
+
+## First in-game result (2026-11-25): patch applied, slot 6666 clip still not playable
+Test pak `Eve_7400_SkyrimLeitoTest_P` (Leito_Anal_Missionary re-built at slot 6666, shows in PEFA). Log:
+- `AToolSlotLimit`: DataGet1/2/3 patched at Script +97 (the 1000 guard is the first statement of each), as expected.
+- PEFA, on play: `clip not in ATOOL's list (PEFA won't load it itself): .../anim/6666.6666`, then `skipped .../anim/6666a.6666a - made for nil` (partner table not loaded either).
+- PEFA never loads clips itself (setting `pefa_load` off, a game-loader crash on 2026-11-16); it takes them from ATOOL's `anim3` array, which `DataGet3` fills (PEFA log: 336-337 clips, fewer than the ~351 slots installed). 6666 is not in that array.
+So raising the guard did not make `DataGet3` list a slot-6666 clip. DataGet3 is short (1831 bytes): guard `<= 1000` at +97, then ~15 calls (asset registry style), no string/name constants. Next: probe the live `anim3` / `j3` / `jl3` with SBLive (`tools/sbl.ps1`) and call `DataGet3` by hand, to see how it picks clips; or try PEFA's `pefa_load=on` for this one clip.
