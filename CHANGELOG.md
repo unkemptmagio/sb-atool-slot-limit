@@ -15,3 +15,6 @@
 
 ## Chrisr0 3.1.0 build (2026-11-25)
 - build-chrisr0.ps1: second build of the same dllmain.cpp against Chrisr0/RE-UE4SS 3.1.0-5 headers (fmt 10.2.1). All 14 UE4SS imports resolve in Chrisr0 3.1.0-4, -5 and -6 (SB-UE4SS 3.1.6 is the identical file as -6). Not tested in game yet.
+
+## In-game test plan (2026-11-25)
+- docs/ingame-test-chrisr0.md and test/ingame-test.ps1 (prepare / swap / status by renaming the ue4ss folder; tested on a fake game folder only).
