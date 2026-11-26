@@ -56,3 +56,6 @@ Still to confirm: that 1001/2000 play, and the load cost of the longer loop (Dat
 
 ## License
 MIT (see LICENSE). Independent community mod, not affiliated with Shift Up, ATOOL or UE4SS. Built against the UE4SS C++ API (MIT).
+
+## Compatible UE4SS builds
+Verified only with **RevOG SB-UE4SS 1.3** (UE4SS.dll SHA-256 `E0CC51CE5B47D5BE82194510B0B4B4054DD15CE0322A983655A022F92D27DABE`). The DLL imports 20 C++ symbols from UE4SS.dll; checked with `dumpbin` 2026-11-25: RevOG 1.3 exports all of them, SB-UE4SS 3.1.6 and Chrisr0/RE-UE4SS 3.1.0-5 lack 5 (`CppUserModBase::on_lua_start` x2, `on_lua_stop` x2, `on_cpp_mods_loaded`), so the DLL cannot load on those builds. Supporting them needs a rebuild against that tree's headers (the class layout differs).

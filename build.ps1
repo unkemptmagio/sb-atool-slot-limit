@@ -1,5 +1,5 @@
 # Build AToolSlotLimit (UE4SS C++ mod) against the UE4SS.dll that is INSTALLED in the game, then install it.
-# Why this way: the installed UE4SS is a private 3.0.1-beta build (2026-03-29, Git SHA 08a0733, not on GitHub), and
+# Why this way: the installed UE4SS is the community RevOG SB-UE4SS 1.3 build (Nexus; UE4SS.log: v3.0.1 Beta, Git SHA 08a0733, SHA-256 E0CC51CE...DABE) and
 # Kaspersky blocks the Rust build scripts a full UE4SS build needs. So:
 #   1. the import library is generated from the installed DLL's exports (every import is guaranteed to exist)
 #   2. only dllmain.cpp is compiled, with the flags of a CMake-configured UE4SS tree (RE-UE4SS main @ 0196ef294,
