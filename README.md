@@ -4,6 +4,8 @@ UE4SS C++ mod for Stellar Blade. ATOOL's `ModActor` blueprint refuses clip slots
 `EX_IntConst 1000` in their bytecode (found 2026-11-25, see `sb-slot-organizer/docs/spike0-atool-limit.md`). This mod rewrites
 those three constants in memory once ATOOL has loaded. Nothing of ATOOL's is modified on disk or redistributed.
 
+
+> **Tested only with RevOG SB-UE4SS 1.3** (UE4SS.dll SHA-256 `E0CC51CE...DABE`). Any other UE4SS build is unsupported - see *Tested version* below.
 ## Status (2026-11-25)
 VERIFIED IN GAME 2026-11-25: with this mod, clips at slots 1001 and 2000 load into ATOOL's list and play (see 'FIX FOUND' below). Earlier note: on load the log shows all three constants found at +97 and changed 1000 -> 9999 (`done: 3 constant(s) now 9999`), no crash. NOT yet verified: that ATOOL then actually plays a clip above 1000.
 
@@ -54,22 +56,17 @@ Patch logged `1000 -> 9999` for all three at 09:16:57, PEFA ran DataGet3 at 09:1
 New build logs UFunction/Script addresses and re-checks every 5 s. First patch 09:27:49 (UFunction 0x3733f6de0...), then at 09:28:17 the same three functions are at NEW addresses (0x1b9912a5e0...) with the 1000 constant back: ATOOL's `ModActor_C` was re-created (level load). The old one-shot mod had patched the dead copy, which is why `on3` stayed 1000. Re-applying on the new copy: live probe shows `on1=on2=on3=9999`, `anim3` = 338 clips, and slots 1001 and 2000 ARE in ATOOL's list (the 660 test pak was replaced by the 1001/2000 one, so 660 is absent as expected).
 Still to confirm: that 1001/2000 play, and the load cost of the longer loop (DataGet3 now tries 9999 paths).
 
-## Compatible UE4SS builds
-A native UE4SS mod links to C++ symbols of its host UE4SS, so there is one DLL per UE4SS line.
+## Tested version - read this first
+**Tested with exactly one UE4SS build: RevOG SB-UE4SS 1.3.**
 
-| Build | UE4SS.dll SHA-256 | DLL | Status |
-|---|---|---|---|
-| RevOG SB-UE4SS 1.3 (UE4SS.log: v3.0.1 Beta, Git SHA 08a0733) | `E0CC51CE5B47D5BE82194510B0B4B4054DD15CE0322A983655A022F92D27DABE` | `build.ps1` | tested in game |
-| Chrisr0/RE-UE4SS 3.1.0-4 | `2E7B3E7E8760263B99AD45FD3EE3C35930E43D8C38D15B7E41685E8A3C26E2C4` | `build-chrisr0.ps1` | all 14 imports resolve; **not tested in game** |
-| Chrisr0/RE-UE4SS 3.1.0-5 (what PEFA's readme lists) | `458839B77D05255F228045210270B01597D47FC83004CD47937126B2409A26EE` | same | same |
-| Chrisr0/RE-UE4SS 3.1.0-6 = SB-UE4SS 3.1.6 | `F3F0229E8D046824C6D71DB256F1C9BBBDA9652A193643C28FA4E6C329E17670` | same | same |
+| | |
+|---|---|
+| UE4SS build | RevOG SB-UE4SS 1.3 (Nexus Mods, Stellar Blade) |
+| `ue4ss\UE4SS.dll` SHA-256 | `E0CC51CE5B47D5BE82194510B0B4B4054DD15CE0322A983655A022F92D27DABE` |
+| first line of `ue4ss\UE4SS.log` | `UE4SS - v3.0.1 Beta #0 - Git SHA #08a0733` |
+| built by | `build.ps1` against that UE4SS.dll's exports |
+| verified in game | slots 1001 and 2000 play; a 982 to 1001 clip with partner tables plays with both partners; ATOOL's class re-creation is re-patched |
 
-The RevOG DLL does not resolve on the 3.1.0 line (5 `CppUserModBase` exports missing, checked with `dumpbin` 2026-11-25), which is why the second build exists. Never mix them: a DLL built for one line loaded into the other still resolves its imports but would call past the end of a different vtable, so the installer picks the DLL by the UE4SS.dll hash. `build-chrisr0.ps1` compiles `dllmain.cpp` against the Chrisr0 3.1.0-5 headers (fmt 10.2.1, as its xmake pins) and links against an import library generated from the UE4SS.dll you pass in; it refuses any UE4SS.dll that is not a known 3.1.0 build, any that exports `on_cpp_mods_loaded` (the RevOG / 4.0 line), and fails if an import is unresolved. Sources used: `UE4SS_v3.1.0-4/-5/-6.zip` from github.com/Chrisr0/RE-UE4SS releases and the repository at tag 3.1.0-5.
-
-## Known differences between UE4SS builds (untested in game)
-- `bUseUObjectArrayCache` defaults to true only in the 3.1.0-4 zip (false in -5, -6, RevOG). The mod was only tested with false; with true, a re-created ATOOL class might stay unpatched until the old object is destroyed.
-- The tick callback needs `HookEngineTick = 1` (the default in every shipped ini).
-- The tick lambda has no try/catch.
-
+**Every other UE4SS build is unsupported and untested.** A native UE4SS mod links to C++ symbols of its host, so a DLL built for one UE4SS line does not belong in another. A second build for the Chrisr0/RE-UE4SS 3.1.0 line was written and removed on 2026-11-25: on 3.1.0-5 the mod loaded but never patched in the first run, and a rerun with a diagnostic DLL crashed while the game loaded the lobby (cause not analysed). If your `UE4SS.dll` hash differs from the one above, do not install this mod.
 ## License
 MIT (see LICENSE). Independent community mod, not affiliated with Shift Up, ATOOL or UE4SS. Built against the UE4SS C++ API (MIT).

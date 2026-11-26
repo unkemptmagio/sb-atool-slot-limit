@@ -28,3 +28,7 @@
 
 ## Run A2 (2026-11-25)
 - Corrected slot-1001 test clip: Adam visible, 2 partner rows, no crash. Control passed; Chrisr0 Run B next.
+
+## Chrisr0 build removed; tested version stated (2026-11-25)
+- Removed build-chrisr0.ps1, the in-game test plan and swap helper: only RevOG SB-UE4SS 1.3 is built and supported. Earlier Chrisr0 entries above are historical (superseded).
+- README states the single tested UE4SS (hash, log banner) first.
