@@ -1,4 +1,4 @@
-﻿# In-game test plan: AToolSlotLimit on the Chrisr0 UE4SS 3.1.0 line
+# In-game test plan: AToolSlotLimit on the Chrisr0 UE4SS 3.1.0 line
 
 Goal: decide whether the `chrisr0-3.1.0` build of the mod works in game. If it does, its UE4SS hashes move from `UNTESTED_UE4SS` to
 `KNOWN_UE4SS` in sb-slot-organizer/slots.py (the tool then allows slots above 1000 there) and the docs lose "not tested".
@@ -14,6 +14,7 @@ patch ATOOL's three 1000 constants, and does a clip above slot 1000 play".
 - **Control first.** The test clip is a copy of the Leito test pak re-slotted to **1001** (`tools/make_test_clip.py` in sb-slot-organizer; fresh
   container id, source untouched). It is first played on the current, known-good RevOG setup. If it plays there, a failure on Chrisr0 can
   only be the UE4SS build, not the clip. (Side effect: a pass also verifies a digit-count change 982 -> 1001, which the tool refuses today.)
+- **Settings check before Run B:** open `ue4ss.test\UE4SS-settings.ini` and confirm `bUseUObjectArrayCache = false` and `HookEngineTick = 1` (true in the 3.1.0-4 zip's cache default would risk ATOOL's re-created class staying unpatched).
 - **Two Chrisr0 builds**: 3.1.0-5 (PEFA's requirement) and 3.1.0-6 (= SB-UE4SS 3.1.6, what Nexus users mostly have). -4 stays untested.
 
 ## Prepare (no game running; does not change what the game loads)
