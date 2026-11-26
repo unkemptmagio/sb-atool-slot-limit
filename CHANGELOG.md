@@ -25,3 +25,6 @@
 
 ## Run A1 (2026-11-25)
 - RevOG build: patched 3 constants, slot-1001 clip played. Test clip had a stale string-property size (digit-count re-slot bug in sb-slot-organizer, fixed); Run A2 pending.
+
+## Run A2 (2026-11-25)
+- Corrected slot-1001 test clip: Adam visible, 2 partner rows, no crash. Control passed; Chrisr0 Run B next.
