@@ -24,6 +24,8 @@ patch ATOOL's three 1000 constants, and does a clip above slot 1000 play".
    (refuses if the proxy dll differs; builds `ue4ss.test` beside `ue4ss`).
 
 ## Run A - control (current RevOG setup)
+**Run A1 (2026-11-25 23:00): mod OK, clip played at 1001, no crash during play - but Adam was missing.** Cause found: a re-slot that changes the digit count left a stale StrProperty tag Size in the partner table (PEFA read 1 row instead of 2). Fixed in iostore._fix_strings and the clip rebuilt (**Run A2**: same steps; Adam must now be visible). Crash dumps at 23:01:49 coincide with game exit, like the earlier session (21:31:46).
+
 1. Start the game, load a save, wait until Eve is in the world. Press O (PEFA), find "Leito test 1001", play it. Quit.
 2. Pass = it plays. Read `ue4ss\UE4SS.log`: `[AToolSlotLimit] done: 3 constant(s) now 9999`. If this fails, stop: the clip or the digit change is the problem, not Chrisr0.
 

@@ -22,3 +22,6 @@
 ## Review fixes for the Chrisr0 build
 - build-chrisr0.ps1 deletes stale outputs first, only accepts the three known Chrisr0 3.1.0 UE4SS.dll hashes (-AllowAnyUe4ss to override), refuses a UE4SS that exports on_cpp_mods_loaded, asserts the import list was parsed and does not contain on_cpp_mods_loaded, prints the real output when compile/link fails.
 - README: removed a duplicated, contradictory compatibility block; documented the known untested differences (object cache default in -4, tick hook, no try/catch).
+
+## Run A1 (2026-11-25)
+- RevOG build: patched 3 constants, slot-1001 clip played. Test clip had a stale string-property size (digit-count re-slot bug in sb-slot-organizer, fixed); Run A2 pending.
