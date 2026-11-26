@@ -31,6 +31,15 @@ ATOOL's `ModActor` blueprint functions `DataGet1/2/3` each hold one Kismet `EX_I
 - Clips at slots 1001 and 2000 appear in ATOOL's list and play; a clip re-slotted to 1001 with partner tables plays with both partners.
 - ATOOL's class re-creation is re-patched. No crash while playing.
 
+## If something goes wrong
+The mod writes `[AToolSlotLimit]` lines into `<game>\SB\Binaries\Win64\ue4ss\UE4SS.log`.
+- **Working:** `[AToolSlotLimit] v0.1 loaded, limit 9999`, then (once ATOOL is loaded) `done: 3 constant(s) now 9999 (3 expected)`.
+- **No `v0.1 loaded`:** the mod did not load (wrong UE4SS build, wrong folder, `enabled.txt` = 0).
+- **`loaded` but never `done`:** ATOOL's class was not found. The mod is silent while it waits - a known observability gap (see `D:\Projects\AGENTS.md`: the next DLL version should log the wait and the host UE4SS build).
+- **`odd Script array` / `no 1000 constant`:** ATOOL's data differs from the version the mod was made for.
+
+Attach `UE4SS.log` (it contains your game folder path) when asking for help.
+
 ## Build
 `build.ps1` (Windows, Visual Studio 2022 C++ build tools) compiles `dllmain.cpp` against a UE4SS source tree and links against an import library generated from the exports of the installed `UE4SS.dll`, so every import exists in that build. The setup steps are in the header of the script. `config.json` (the game path) is local and not committed.
 
