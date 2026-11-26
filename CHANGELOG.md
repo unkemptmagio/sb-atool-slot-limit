@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2 - observability (2026-11-26)
+- Own log file `AToolSlotLimit.log` (timestamped, rotated at 256 KB) in addition to the `[AToolSlotLimit]` lines in UE4SS.log.
+- Startup identity: version, config read, host `UE4SS.dll` path + SHA-256 with a warning when it is not the tested build (RevOG SB-UE4SS 1.3).
+- No silent waits: `waiting for ATOOL` once, `still waiting for ATOOL after N s` every 30 s, `ATOOL found after N s`; "no 1000 constant" / "odd Script array" are logged once instead of every poll; exceptions in the tick callback are caught and logged (first 5).
+- Behaviour change (config only): a `limit=` below 1000, `0` or non-numeric text now means 1000 (ATOOL unchanged) with a warning; v0.1 used the default 9999 for non-numeric input and accepted 1..999 literally. The patch logic itself is unchanged (reviewed line by line against 0.1).
+- Tested in game on RevOG SB-UE4SS 1.3: all log lines as above, 3 constants patched, re-applied after ATOOL's class was re-created, ATOOL listed a slot-1001 clip. `main.dll` SHA-256 `C42C8EF0AB1B1EBC16DBE62927F65CB6C600A12071D73CDC1DE15C325B7AFD76`.
+- Known minor items for the next version (from the review, none blocking): no try/catch around `on_unreal_init`; after 5 tick exceptions logging stops without saying so; a `limit=1000` run says `done: 3 constant(s) now 1000` without noting that nothing was changed; SEH faults (access violations) are not caught; paths are limited to MAX_PATH; `widen()` of non-ASCII config text is garbled in the log.
+
 ## 0.1 (2026-11-25)
 - Patch ATOOL DataGet1-3 slot guard in memory (unverified in game).
 

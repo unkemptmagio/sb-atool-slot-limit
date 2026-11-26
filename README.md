@@ -20,25 +20,27 @@ Optional UE4SS C++ mod for Stellar Blade that lifts ATOOL's 1000-slot limit at r
 Normally through SlotOrganizer's `install-atool-limit.bat`, which refuses any other UE4SS build. By hand, only on the tested build: copy `AToolSlotLimit\{dlls\main.dll, enabled.txt, config.txt}` to `SB\Binaries\Win64\ue4ss\Mods\AToolSlotLimit\`. Uninstall: delete that folder.
 
 ## Settings
-- `config.txt`: `limit=9999` (the new slot limit; `1000` leaves ATOOL unchanged; values below 1000 are not supported).
+- `config.txt`: `limit=9999` is the new slot limit. `limit=1000` leaves ATOOL unchanged. A value below 1000, `0` or text that is not a number is not supported: the mod uses 1000 (ATOOL unchanged) and logs a warning - so a typo switches the feature off instead of guessing.
 - `enabled.txt`: `1` on, `0` off.
 
 ## How it works
 ATOOL's `ModActor` blueprint functions `DataGet1/2/3` each hold one Kismet `EX_IntConst 1000` (`1D E8 03 00 00`) at `Script + 97`. Once ATOOL's class is loaded the mod finds those bytes in `UStruct::Script` (a `TArray<uint8>` at `+0x60`, the game's own UE 4.26 layout) and writes the configured limit. It polls every 2 s until patched, then every 5 s, because ATOOL's class is re-created after load and must be patched again. The one source file is `dllmain.cpp`.
 
 ## Verified in game (RevOG SB-UE4SS 1.3, 2026-11-25)
-- Log: `[AToolSlotLimit] v0.1 loaded, limit 9999`, then `done: 3 constant(s) now 9999 (3 expected)`.
+- Log: `[AToolSlotLimit] v0.2 loaded, limit 9999`, then `done: 3 constant(s) now 9999 (3 expected)`.
 - Clips at slots 1001 and 2000 appear in ATOOL's list and play; a clip re-slotted to 1001 with partner tables plays with both partners.
 - ATOOL's class re-creation is re-patched. No crash while playing.
 
 ## If something goes wrong
-The mod writes `[AToolSlotLimit]` lines into `<game>\SB\Binaries\Win64\ue4ss\UE4SS.log`.
-- **Working:** `[AToolSlotLimit] v0.1 loaded, limit 9999`, then (once ATOOL is loaded) `done: 3 constant(s) now 9999 (3 expected)`.
-- **No `v0.1 loaded`:** the mod did not load (wrong UE4SS build, wrong folder, `enabled.txt` = 0).
-- **`loaded` but never `done`:** ATOOL's class was not found. The mod is silent while it waits - a known observability gap (the next DLL version should log the wait and the host UE4SS build).
-- **`odd Script array` / `no 1000 constant`:** ATOOL's data differs from the version the mod was made for.
+The mod writes the same lines to two places: `<game>\SB\Binaries\Win64\ue4ss\UE4SS.log` (search for `AToolSlotLimit`) and its own timestamped file `Mods\AToolSlotLimit\AToolSlotLimit.log` next to `config.txt` (rotated at 256 KB, one `.1` copy).
+- **Working:** `v0.2 loaded, limit 9999`, `host UE4SS: ... - the tested build (RevOG SB-UE4SS 1.3)`, `engine tick callback is running`, then `done: 3 constant(s) now 9999 (3 expected)`.
+- **`host UE4SS: ... NOT the tested build`:** you are not on RevOG SB-UE4SS 1.3 - unsupported.
+- **No `v0.2 loaded`:** the mod did not load (wrong UE4SS build, wrong folder, `enabled.txt` = 0).
+- **`waiting for ATOOL` / `still waiting for ATOOL after N s` (every 30 s):** ATOOL's class is not loaded (not installed, or not loaded yet); `ATOOL found after N s` follows when it appears.
+- **`odd Script array` / `no 1000 constant` (logged once per function):** ATOOL's data differs from the version the mod was made for.
+- **`config: limit=... is below 1000`:** fix `config.txt` (see Settings).
 
-Attach `UE4SS.log` (it contains your game folder path) when asking for help.
+Attach `AToolSlotLimit.log` (or the `UE4SS.log` lines containing `AToolSlotLimit`) when asking for help. Both contain your game folder path, which can include your Windows user name.
 
 ## Build
 `build.ps1` (Windows, Visual Studio 2022 C++ build tools) compiles `dllmain.cpp` against a UE4SS source tree and links against an import library generated from the exports of the installed `UE4SS.dll`, so every import exists in that build. The setup steps are in the header of the script. `config.json` (the game path) is local and not committed.
