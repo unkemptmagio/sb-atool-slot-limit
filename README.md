@@ -54,9 +54,6 @@ Patch logged `1000 -> 9999` for all three at 09:16:57, PEFA ran DataGet3 at 09:1
 New build logs UFunction/Script addresses and re-checks every 5 s. First patch 09:27:49 (UFunction 0x3733f6de0...), then at 09:28:17 the same three functions are at NEW addresses (0x1b9912a5e0...) with the 1000 constant back: ATOOL's `ModActor_C` was re-created (level load). The old one-shot mod had patched the dead copy, which is why `on3` stayed 1000. Re-applying on the new copy: live probe shows `on1=on2=on3=9999`, `anim3` = 338 clips, and slots 1001 and 2000 ARE in ATOOL's list (the 660 test pak was replaced by the 1001/2000 one, so 660 is absent as expected).
 Still to confirm: that 1001/2000 play, and the load cost of the longer loop (DataGet3 now tries 9999 paths).
 
-## License
-MIT (see LICENSE). Independent community mod, not affiliated with Shift Up, ATOOL or UE4SS. Built against the UE4SS C++ API (MIT).
-
 ## Compatible UE4SS builds
 A native UE4SS mod links to C++ symbols of its host UE4SS, so there is one DLL per UE4SS line.
 
