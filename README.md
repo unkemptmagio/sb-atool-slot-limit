@@ -67,9 +67,12 @@ A native UE4SS mod links to C++ symbols of its host UE4SS, so there is one DLL p
 | Chrisr0/RE-UE4SS 3.1.0-5 (what PEFA's readme lists) | `458839B77D05255F228045210270B01597D47FC83004CD47937126B2409A26EE` | same | same |
 | Chrisr0/RE-UE4SS 3.1.0-6 = SB-UE4SS 3.1.6 | `F3F0229E8D046824C6D71DB256F1C9BBBDA9652A193643C28FA4E6C329E17670` | same | same |
 
-The RevOG DLL does not resolve on the 3.1.0 line (5 `CppUserModBase` exports missing, checked with `dumpbin` 2026-11-25), which is why the second build exists. `build-chrisr0.ps1` compiles `dllmain.cpp` against the Chrisr0 3.1.0-5 headers (fmt 10.2.1, as its xmake pins) and links against an import library generated from the UE4SS.dll you pass in; it fails if any import is unresolved. Sources used: `UE4SS_v3.1.0-4/-5/-6.zip` from github.com/Chrisr0/RE-UE4SS releases and the repository at tag 3.1.0-5.
+The RevOG DLL does not resolve on the 3.1.0 line (5 `CppUserModBase` exports missing, checked with `dumpbin` 2026-11-25), which is why the second build exists. Never mix them: a DLL built for one line loaded into the other still resolves its imports but would call past the end of a different vtable, so the installer picks the DLL by the UE4SS.dll hash. `build-chrisr0.ps1` compiles `dllmain.cpp` against the Chrisr0 3.1.0-5 headers (fmt 10.2.1, as its xmake pins) and links against an import library generated from the UE4SS.dll you pass in; it refuses any UE4SS.dll that is not a known 3.1.0 build, any that exports `on_cpp_mods_loaded` (the RevOG / 4.0 line), and fails if an import is unresolved. Sources used: `UE4SS_v3.1.0-4/-5/-6.zip` from github.com/Chrisr0/RE-UE4SS releases and the repository at tag 3.1.0-5.
+
+## Known differences between UE4SS builds (untested in game)
+- `bUseUObjectArrayCache` defaults to true only in the 3.1.0-4 zip (false in -5, -6, RevOG). The mod was only tested with false; with true, a re-created ATOOL class might stay unpatched until the old object is destroyed.
+- The tick callback needs `HookEngineTick = 1` (the default in every shipped ini).
+- The tick lambda has no try/catch.
+
 ## License
 MIT (see LICENSE). Independent community mod, not affiliated with Shift Up, ATOOL or UE4SS. Built against the UE4SS C++ API (MIT).
-
-## Compatible UE4SS builds
-Verified only with **RevOG SB-UE4SS 1.3** (UE4SS.dll SHA-256 `E0CC51CE5B47D5BE82194510B0B4B4054DD15CE0322A983655A022F92D27DABE`). The DLL imports 20 C++ symbols from UE4SS.dll; checked with `dumpbin` 2026-11-25: RevOG 1.3 exports all of them, SB-UE4SS 3.1.6 and Chrisr0/RE-UE4SS 3.1.0-5 lack 5 (`CppUserModBase::on_lua_start` x2, `on_lua_stop` x2, `on_cpp_mods_loaded`), so the DLL should not load on those builds (UE4SS should skip it; not tested in game). Source of the Chrisr0 check: `UE4SS_v3.1.0-5.zip` from github.com/Chrisr0/RE-UE4SS releases, UE4SS.dll SHA-256 `458839B77D05255F228045210270B01597D47FC83004CD47937126B2409A26EE`. Supporting them needs a rebuild against that tree's headers (the class layout probably differs; not checked).
