@@ -35,7 +35,7 @@ ATOOL's `ModActor` blueprint functions `DataGet1/2/3` each hold one Kismet `EX_I
 The mod writes `[AToolSlotLimit]` lines into `<game>\SB\Binaries\Win64\ue4ss\UE4SS.log`.
 - **Working:** `[AToolSlotLimit] v0.1 loaded, limit 9999`, then (once ATOOL is loaded) `done: 3 constant(s) now 9999 (3 expected)`.
 - **No `v0.1 loaded`:** the mod did not load (wrong UE4SS build, wrong folder, `enabled.txt` = 0).
-- **`loaded` but never `done`:** ATOOL's class was not found. The mod is silent while it waits - a known observability gap (see `D:\Projects\AGENTS.md`: the next DLL version should log the wait and the host UE4SS build).
+- **`loaded` but never `done`:** ATOOL's class was not found. The mod is silent while it waits - a known observability gap (the next DLL version should log the wait and the host UE4SS build).
 - **`odd Script array` / `no 1000 constant`:** ATOOL's data differs from the version the mod was made for.
 
 Attach `UE4SS.log` (it contains your game folder path) when asking for help.
